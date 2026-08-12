@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSE Faculty Finder</title>
+<style>
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:Inter,Segoe UI,Arial,sans-serif;
+    background:#f3f7fa;
+    color:#203040;
+  }
+  header{
+    background:linear-gradient(135deg,#173d58,#285b78);
+    color:white;
+    padding:42px 20px 70px;
+    text-align:center;
+  }
+  header .badge{
+    display:inline-block;
+    padding:7px 13px;
+    border:1px solid rgba(255,255,255,.35);
+    border-radius:30px;
+    font-size:12px;
+    letter-spacing:.8px;
+    margin-bottom:14px;
+  }
+  h1{margin:0;font-size:clamp(30px,5vw,48px)}
+  header p{margin:10px auto 0;max-width:650px;opacity:.88}
+  .wrap{max-width:1050px;margin:-42px auto 50px;padding:0 18px}
+  .searchbox{
+    background:white;border-radius:18px;padding:22px;
+    box-shadow:0 12px 35px rgba(27,58,78,.13);
+  }
+  .search-row{display:flex;gap:10px}
+  input{
+    flex:1;padding:16px 18px;border:1px solid #d5e0e7;border-radius:12px;
+    font-size:16px;outline:none;transition:.2s;
+  }
+  input:focus{border-color:#2789b8;box-shadow:0 0 0 4px rgba(39,137,184,.10)}
+  button{
+    border:0;border-radius:12px;padding:0 20px;background:#1f6688;color:#fff;
+    font-weight:700;cursor:pointer;font-size:15px;
+  }
+  button:hover{background:#174f6b}
+  .hint{font-size:13px;color:#71808b;margin:11px 2px 0}
+  .result-area{margin-top:25px}
+  .topline{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:12px}
+  .topline h2{font-size:20px;margin:0}
+  .count{font-size:13px;color:#657682}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:15px}
+  .card{
+    background:#fff;border:1px solid #e1e9ee;border-radius:16px;padding:20px;
+    box-shadow:0 5px 18px rgba(30,58,75,.06);
+  }
+  .avatar{
+    width:44px;height:44px;border-radius:50%;background:#e6f2f7;color:#1f6688;
+    display:grid;place-items:center;font-weight:800;margin-bottom:13px;
+  }
+  .name{font-size:17px;font-weight:750;margin-bottom:14px}
+  .location{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .loc{
+    background:#f6f9fb;border-radius:10px;padding:10px;
+  }
+  .loc small{display:block;color:#7a8993;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+  .loc strong{display:block;margin-top:4px;font-size:14px}
+  .floor-title{
+    margin:28px 0 12px;padding:12px 15px;background:#e8f0f4;border-left:5px solid #2b7598;
+    border-radius:8px;font-weight:800;
+  }
+  table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 5px 18px rgba(30,58,75,.06)}
+  th{background:#284f68;color:white;text-align:left;padding:13px 15px;font-size:13px}
+  td{padding:12px 15px;border-bottom:1px solid #e8edf0;font-size:14px}
+  tr:last-child td{border-bottom:0}
+  tr:hover td{background:#f7fbfd}
+  .empty{
+    background:#fff;border:1px dashed #cbd8df;border-radius:15px;text-align:center;padding:45px 20px;color:#71808b;
+  }
+  footer{text-align:center;color:#80909a;font-size:12px;padding:0 20px 35px}
+  @media(max-width:600px){
+    header{padding-bottom:65px}
+    .search-row{flex-direction:column}
+    button{height:50px}
+    .location{grid-template-columns:1fr}
+    table{font-size:13px}
+    th,td{padding:10px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">CSE DEPARTMENT • CAMPUS DIRECTORY</div>
+  <h1>Faculty Finder</h1>
+  <p>Find any faculty member and instantly see their floor, room or lab, and department location.</p>
+</header>
+
+<main class="wrap">
+  <section class="searchbox">
+    <div class="search-row">
+      <input id="search" type="search" placeholder="Search faculty name, room or lab…" autocomplete="off">
+      <button id="clearBtn" type="button">Clear</button>
+    </div>
+    <div class="hint">Try: <b>Gajgaon</b>, <b>Lab 202</b>, <b>Dr. Saurab</b>, or a faculty member's surname.</div>
+  </section>
+
+  <section class="result-area">
+    <div class="topline">
+      <h2 id="title">Faculty Directory</h2>
+      <div class="count" id="count"></div>
+    </div>
+    <div id="results"></div>
+  </section>
+</main>
+
+<footer>CSE Department Faculty Finder • Update the directory data whenever faculty rooms change.</footer>
+
+<script>
+const faculty = [
+  {name:"Prof Gajanan D. Gaikwad", floor:"1st Floor", room:"101 Lab"},
+  {name:"Prof Harshal D. Wankhade", floor:"1st Floor", room:"101 Lab"},
+  {name:"Prof Vishalshinh V. Bais", floor:"1st Floor", room:"102 Lab"},
+  {name:"Prof Chetan R. Ingole", floor:"1st Floor", room:"102 Lab"},
+  {name:"Prof Mansi S. Nanwane", floor:"1st Floor", room:"103 Lab"},
+  {name:"Prof Shreya R. Gangane", floor:"1st Floor", room:"103 Lab"},
+  {name:"Prof Anuradha P. Kale", floor:"1st Floor", room:"104 Lab"},
+  {name:"Prof Ashutosh A. Ugewkar", floor:"1st Floor", room:"104 Lab"},
+  {name:"Dr. D. G. Harkut", floor:"1st Floor", room:"HOD Cabin"},
+  {name:"Dr. Rashmi P. Sonar", floor:"1st Floor", room:"Staff Room"},
+  {name:"Prof Sampada P. Chaudhari", floor:"1st Floor", room:"Staff Room"},
+  {name:"CSE Office", floor:"1st Floor", room:"CSE Office"},
+  {name:"Prof Aniruddha D. Ingole", floor:"2nd Floor", room:"CR 201"},
+  {name:"Prof Aakansha P. Tiwari", floor:"2nd Floor", room:"CR 201"},
+  {name:"Prof Gargey M. Aware", floor:"2nd Floor", room:"Lab 201"},
+  {name:"Prof Soni O. Sisodiya", floor:"2nd Floor", room:"Lab 201"},
+  {name:"Prof Priyanka R. Patil", floor:"2nd Floor", room:"Lab 202"},
+  {name:"Prof Ketaki A. Kadu", floor:"2nd Floor", room:"Lab 202"},
+  {name:"Prof Prajwal V. Shete", floor:"2nd Floor", room:"Lab 203"},
+  {name:"Vijay D. Khanday", floor:"2nd Floor", room:"Lab 203"},
+  {name:"Dr. Saurab A. Shah", floor:"2nd Floor", room:"Lab 204"},
+  {name:"Prof Shrikant A. Deshmukh", floor:"2nd Floor", room:"Lab 204"},
+  {name:"Prof Ashish D. Sawant", floor:"2nd Floor", room:"Lab 205"},
+  {name:"Prof Sagar A. Bhakta", floor:"2nd Floor", room:"Lab 205"}
+];
+
+const results = document.getElementById("results");
+const search = document.getElementById("search");
+const count = document.getElementById("count");
+const title = document.getElementById("title");
+
+function initials(name){
+  return name.replace("Prof ","").replace("Dr. ","").split(/\s+/)
+    .filter(Boolean).slice(0,2).map(x=>x[0]).join("").toUpperCase();
+}
+function card(x){
+  return `<article class="card">
+    <div class="avatar">${initials(x.name)}</div>
+    <div class="name">${x.name}</div>
+    <div class="location">
+      <div class="loc"><small>Floor</small><strong>${x.floor}</strong></div>
+      <div class="loc"><small>Room / Lab</small><strong>${x.room}</strong></div>
+    </div>
+  </article>`;
+}
+function render(){
+  const q = search.value.trim().toLowerCase();
+  const filtered = faculty.filter(x =>
+    `${x.name} ${x.floor} ${x.room}`.toLowerCase().includes(q)
+  );
+  count.textContent = `${filtered.length} result${filtered.length===1?"":"s"}`;
+  title.textContent = q ? "Search Results" : "Faculty Directory";
+
+  if(!filtered.length){
+    results.innerHTML = `<div class="empty"><b>No faculty found</b><br>Try a different name, room, or lab number.</div>`;
+    return;
+  }
+
+  if(q){
+    results.innerHTML = `<div class="cards">${filtered.map(card).join("")}</div>`;
+  } else {
+    const floors = [...new Set(filtered.map(x=>x.floor))];
+    results.innerHTML = floors.map(floor => `
+      <div class="floor-title">${floor}</div>
+      <table>
+        <thead><tr><th>Faculty Member</th><th>Room / Lab</th></tr></thead>
+        <tbody>${filtered.filter(x=>x.floor===floor).map(x =>
+          `<tr><td>${x.name}</td><td>${x.room}</td></tr>`).join("")}</tbody>
+      </table>`).join("");
+  }
+}
+search.addEventListener("input", render);
+document.getElementById("clearBtn").addEventListener("click",()=>{search.value="";search.focus();render()});
+render();
+</script>
+</body>
+</html>
